@@ -7,18 +7,11 @@ import { Display } from "@/components/Display";
 
 const OPERATORS = new Set(["+", "−", "×", "÷", "^", "%"]);
 
-function isDigit(label: string) {
-  return /^[0-9]$/.test(label);
-}
-
-function isOperator(label: string) {
-  return OPERATORS.has(label);
-}
-
+function isDigit(label: string) { return /^[0-9]$/.test(label); }
+function isOperator(label: string) { return OPERATORS.has(label); }
 function shouldStartFresh(evaluated: boolean, label: string) {
   return evaluated && (isDigit(label) || label === ".");
 }
-
 function normalizeKeyToLabel(key: string): string | null {
   if (/^[0-9]$/.test(key)) return key;
   if (key === ".") return ".";
@@ -41,23 +34,20 @@ export function Calculator() {
   const [result, setResult] = React.useState("0");
   const [evaluated, setEvaluated] = React.useState(false);
   const [history, setHistory] = React.useState<string[]>([]);
+  const [mode, setMode] = React.useState<"basic" | "scientific">("basic");
 
   const onPress = React.useCallback(
     (label: string) => {
       if (label === "AC") {
-        setInput("");
-        setResult("0");
-        setEvaluated(false);
-        setHistory([]);
+        setInput(""); setResult("0");
+        setEvaluated(false); setHistory([]);
         return;
       }
-
       if (label === "⌫") {
         setInput((prev) => prev.slice(0, -1));
         setEvaluated(false);
         return;
       }
-
       if (label === "=") {
         const expr = input.trim();
         if (!expr) return;
@@ -68,19 +58,11 @@ export function Calculator() {
         setEvaluated(true);
         return;
       }
-
       setInput((prev) => {
         const nextBase = shouldStartFresh(evaluated, label) ? "" : prev;
-        const next = nextBase + label;
-
-        // If we were evaluated and user presses an operator, continue from result.
-        if (evaluated && isOperator(label) && !prev) {
-          return result + label;
-        }
-
-        return next;
+        if (evaluated && isOperator(label) && !prev) return result + label;
+        return nextBase + label;
       });
-
       setEvaluated(false);
     },
     [evaluated, input, result]
@@ -93,65 +75,165 @@ export function Calculator() {
       e.preventDefault();
       onPress(label);
     }
-
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onPress]);
 
-  const body =
-    "w-full max-w-sm sm:max-w-md rounded-[2rem] bg-gray-800 shadow-2xl shadow-black/40 p-4 sm:p-5";
-
   return (
-    <section className={body}>
+    <section style={{
+      width: "100%",
+      maxWidth: "420px",
+      borderRadius: "2rem",
+      background: "linear-gradient(145deg, #831843, #4a0020)",
+      boxShadow: "0 25px 50px rgba(0,0,0,0.5)",
+      padding: "1.25rem",
+    }}>
+
+      {/* ── Mode Switcher ── */}
+      <div style={{
+        display: "flex",
+        background: "rgba(0,0,0,0.3)",
+        borderRadius: "1rem",
+        padding: "4px",
+        marginBottom: "12px",
+        gap: "4px"
+      }}>
+        <button
+          onClick={() => setMode("basic")}
+          style={{
+            flex: 1, padding: "10px", borderRadius: "12px", border: "none",
+            cursor: "pointer", fontWeight: 600, fontSize: "15px",
+            background: mode === "basic"
+              ? "linear-gradient(135deg, #f9a8d4, #fbbf24)"
+              : "transparent",
+            color: mode === "basic" ? "#831843" : "#f9a8d4",
+            transition: "all 0.2s"
+          }}
+        >
+          Basic
+        </button>
+        <button
+          onClick={() => setMode("scientific")}
+          style={{
+            flex: 1, padding: "10px", borderRadius: "12px", border: "none",
+            cursor: "pointer", fontWeight: 600, fontSize: "15px",
+            background: mode === "scientific"
+              ? "linear-gradient(135deg, #f9a8d4, #fbbf24)"
+              : "transparent",
+            color: mode === "scientific" ? "#831843" : "#f9a8d4",
+            transition: "all 0.2s"
+          }}
+        >
+          Scientific
+        </button>
+      </div>
+
       <Display expression={input} history={history} result={result} />
 
-      <div className="mt-4 grid grid-cols-4 gap-2 sm:gap-3">
-        {/* Row 1 */}
-        <Button label="sin(" variant="function" onPress={onPress} />
-        <Button label="cos(" variant="function" onPress={onPress} />
-        <Button label="tan(" variant="function" onPress={onPress} />
-        <Button label="sqrt(" variant="function" onPress={onPress} />
+      <div style={{
+        marginTop: "12px",
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gap: "8px"
+      }}>
 
-        {/* Row 2 */}
-        <Button label="^" variant="operator" onPress={onPress} />
-        <Button label="log(" variant="function" onPress={onPress} />
-        <Button label="π" variant="function" onPress={onPress} />
-        <Button label="e" variant="function" onPress={onPress} />
+        {/* ── Scientific only buttons ── */}
+        {mode === "scientific" && (
+          <>
+            <CalcBtn label="sin(" color="fn" onPress={onPress} />
+            <CalcBtn label="cos(" color="fn" onPress={onPress} />
+            <CalcBtn label="tan(" color="fn" onPress={onPress} />
+            <CalcBtn label="sqrt(" color="fn" onPress={onPress} />
 
-        {/* Row 3 */}
-        <Button label="(" variant="function" onPress={onPress} />
-        <Button label=")" variant="function" onPress={onPress} />
-        <Button label="%" variant="operator" onPress={onPress} />
-        <Button label="AC" variant="clear" onPress={onPress} />
+            <CalcBtn label="^" color="op" onPress={onPress} />
+            <CalcBtn label="log(" color="fn" onPress={onPress} />
+            <CalcBtn label="π" color="fn" onPress={onPress} />
+            <CalcBtn label="e" color="fn" onPress={onPress} />
 
-        {/* Row 4 */}
-        <Button label="7" onPress={onPress} />
-        <Button label="8" onPress={onPress} />
-        <Button label="9" onPress={onPress} />
-        <Button label="÷" variant="operator" onPress={onPress} />
+            <CalcBtn label="(" color="fn" onPress={onPress} />
+            <CalcBtn label=")" color="fn" onPress={onPress} />
+            <CalcBtn label="%" color="op" onPress={onPress} />
+            <CalcBtn label="AC" color="clear" onPress={onPress} />
+          </>
+        )}
 
-        {/* Row 5 */}
-        <Button label="4" onPress={onPress} />
-        <Button label="5" onPress={onPress} />
-        <Button label="6" onPress={onPress} />
-        <Button label="×" variant="operator" onPress={onPress} />
+        {/* ── Basic only buttons ── */}
+        {mode === "basic" && (
+          <>
+            <CalcBtn label="AC" color="clear" span={3} onPress={onPress} />
+            <CalcBtn label="%" color="op" onPress={onPress} />
+          </>
+        )}
 
-        {/* Row 6 */}
-        <Button label="1" onPress={onPress} />
-        <Button label="2" onPress={onPress} />
-        <Button label="3" onPress={onPress} />
-        <Button label="−" variant="operator" onPress={onPress} />
+        {/* ── Shared rows ── */}
+        <CalcBtn label="7" color="num" onPress={onPress} />
+        <CalcBtn label="8" color="num" onPress={onPress} />
+        <CalcBtn label="9" color="num" onPress={onPress} />
+        <CalcBtn label="÷" color="op" onPress={onPress} />
 
-        {/* Row 7 */}
-        <Button label="0" className="col-span-2" onPress={onPress} />
-        <Button label="." onPress={onPress} />
-        <Button label="+" variant="operator" onPress={onPress} />
+        <CalcBtn label="4" color="num" onPress={onPress} />
+        <CalcBtn label="5" color="num" onPress={onPress} />
+        <CalcBtn label="6" color="num" onPress={onPress} />
+        <CalcBtn label="×" color="op" onPress={onPress} />
 
-        {/* Row 8 */}
-        <Button label="⌫" variant="function" onPress={onPress} ariaLabel="Backspace" />
-        <Button label="=" variant="equals" className="col-span-3" onPress={onPress} />
+        <CalcBtn label="1" color="num" onPress={onPress} />
+        <CalcBtn label="2" color="num" onPress={onPress} />
+        <CalcBtn label="3" color="num" onPress={onPress} />
+        <CalcBtn label="−" color="op" onPress={onPress} />
+
+        <CalcBtn label="0" color="num" span={2} onPress={onPress} />
+        <CalcBtn label="." color="num" onPress={onPress} />
+        <CalcBtn label="+" color="op" onPress={onPress} />
+
+        <CalcBtn label="⌫" color="fn" onPress={onPress} />
+        <CalcBtn label="=" color="eq" span={3} onPress={onPress} />
       </div>
     </section>
   );
 }
 
+function CalcBtn({
+  label, color, span = 1, onPress
+}: {
+  label: string;
+  color: "num" | "op" | "fn" | "eq" | "clear";
+  span?: number;
+  onPress: (l: string) => void;
+}) {
+  const bg: Record<string, string> = {
+    num: "rgba(255,255,255,0.08)",
+    op:  "linear-gradient(135deg, #fbbf24, #f59e0b)",
+    fn:  "rgba(249,168,212,0.15)",
+    eq:  "linear-gradient(135deg, #f9a8d4, #fbbf24)",
+    clear: "#be123c",
+  };
+  const col: Record<string, string> = {
+    num: "#fce7f3",
+    op:  "#831843",
+    fn:  "#f9a8d4",
+    eq:  "#831843",
+    clear: "#fff",
+  };
+
+  return (
+    <button
+      onClick={() => onPress(label)}
+      style={{
+        gridColumn: span > 1 ? `span ${span}` : undefined,
+        background: bg[color],
+        color: col[color],
+        border: "none",
+        borderRadius: "14px",
+        minHeight: "56px",
+        fontSize: "1.1rem",
+        fontWeight: 600,
+        cursor: "pointer",
+        transition: "opacity 0.15s, transform 0.1s",
+      }}
+      onMouseDown={e => (e.currentTarget.style.transform = "scale(0.94)")}
+      onMouseUp={e => (e.currentTarget.style.transform = "scale(1)")}
+    >
+      {label}
+    </button>
+  );
+}

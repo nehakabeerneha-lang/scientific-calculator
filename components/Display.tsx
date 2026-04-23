@@ -11,9 +11,7 @@ function sizeClassForResult(result: string) {
 }
 
 export function Display({
-  expression,
-  history,
-  result
+  expression, history, result
 }: {
   expression: string;
   history: string[];
@@ -23,33 +21,37 @@ export function Display({
   const sizeClass = React.useMemo(() => sizeClassForResult(result), [result]);
 
   return (
-    <div className="rounded-3xl bg-black/20 px-4 py-4 sm:px-5 sm:py-5">
-      <div className="min-h-[1.25rem] text-right text-xs text-gray-300/80 space-y-1">
-        {lastHistory.length > 0 ? (
-          lastHistory.map((h, i) => (
-            <div key={i} className="truncate">
-              {h}
-            </div>
-          ))
-        ) : (
-          <div className="opacity-0">.</div>
-        )}
+    <div style={{
+      borderRadius: "1.25rem",
+      background: "rgba(0,0,0,0.3)",
+      padding: "12px 16px",
+    }}>
+      <div style={{
+        textAlign: "right", fontSize: "11px",
+        color: "rgba(249,168,212,0.6)", minHeight: "16px"
+      }}>
+        {lastHistory.map((h, i) => (
+          <div key={i} style={{overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{h}</div>
+        ))}
       </div>
 
-      <div className="mt-2 min-h-[1.75rem] text-right text-sm text-gray-200/90 truncate">
+      <div style={{
+        textAlign: "right", fontSize: "13px",
+        color: "rgba(249,168,212,0.85)", marginTop: "4px",
+        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
+      }}>
         {expression || " "}
       </div>
 
-      <div
-        className={[
-          "mt-2 text-right font-semibold leading-none tabular-nums",
-          sizeClass,
-          "transition-all duration-200"
-        ].join(" ")}
-      >
+      <div style={{
+        textAlign: "right", fontWeight: 700,
+        color: "#fbbf24", marginTop: "4px",
+        fontSize: sizeClass === "text-5xl" ? "3rem"
+               : sizeClass === "text-4xl" ? "2.25rem"
+               : sizeClass === "text-3xl" ? "1.875rem" : "1.5rem"
+      }}>
         {result}
       </div>
     </div>
   );
 }
-
