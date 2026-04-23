@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: #030712; /* gray-950 */
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+* {
+  box-sizing: border-box;
+  touch-action: manipulation;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.calculator {
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+  min-height: 100dvh;
+}
+
+button {
+  min-height: 56px;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
